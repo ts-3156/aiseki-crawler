@@ -1,0 +1,2 @@
+* 9-19 * * * /bin/bash -l -c "cd /home/ec2-user/lounge && bundle exec ruby crawler.rb >>log/cron.log 2>&1"
+
