@@ -1,30 +1,43 @@
 #!/usr/bin/ruby
 
 require 'anemone'
+require 'fileutils'
+require 'optparse'
 
 module Crawl
-  URL = 'http://oriental-lounge.com/'
-  PLACES = %w(
-    sapporo
-    sendai
-    shinjuku
-    shibuya
-    machida
-    nagoya
-    kyoto
-    shinsaibashi
-    kobe
-    hiroshima
-    fukuoka
-    kumamoto
-    kagoshima
-    okinawa
-  )
+  class Place
+    NAMES = %w(
+      sapporo
+      sendai
+      shinjuku
+      shibuya
+      machida
+      nagoya
+      kyoto
+      shinsaibashi
+      kobe
+      hiroshima
+      fukuoka
+      kumamoto
+      kagoshima
+      okinawa
+    )
+
+    attr_reader :name, :men, :lady
+
+    def initialize(name, men, lady)
+      @name, @men, @lady = name, men, lady
+    end
+
+    def to_s
+      "#{name} #{men} #{lady}"
+    end
+  end
   
   class Cache
     class << self
       def time2key(time)
-        time.strftime("%Y%m%d%H%M") # yyyymmddhhmm
+        time.is_a?(String) ? time : time.strftime("%Y%m%d%H%M") # yyyymmddhhmm
       end
   
       def dir
@@ -63,33 +76,50 @@ module Crawl
       end
     end
   end
-end
 
-def fetch(url)
-  Anemone.crawl(url, depth_limit: 0) do |anemone|
-    anemone.on_every_page do |page|
-      return page.doc
+  class Scraper
+    URL = 'http://oriental-lounge.com/'
+
+    class << self
+      def scrape(name, time)
+        html = Cache.fetch(time) { fetch(URL).to_html }
+        doc = Nokogiri::HTML(html)
+        Place::NAMES.select { |n| name == 'all' ? true : name == n }.map do |name|
+          str = parse(doc, "//a[@id='box_#{name}']")
+          men, lady = extract(str)
+          Place.new(name, men, lady)
+        end
+      end
+
+      def fetch(url)
+        Anemone.crawl(url, depth_limit: 0) do |anemone|
+          anemone.on_every_page do |page|
+            return page.doc
+          end
+        end
+      end
+
+      def parse(doc, xpath)
+        doc.xpath(xpath).each do |tag|
+          return tag.text
+        end
+      end
+
+      def extract(str)
+        str.strip.match(/(\d+)[^\d]+(\d+)/).to_a.slice(1, 2)
+      end
     end
   end
 end
 
-def parse(doc, xpath)
-  doc.xpath(xpath).each do |tag|
-		return tag.text
-  end
-end
-
-def extract(str)
-  str.strip.match(/(\d+)[^\d]+(\d+)/).to_a.slice(1, 2)
-end
-
 if $0 == __FILE__
-  html = Crawl::Cache.fetch(Time.now) { fetch(Crawl::URL).to_html }
-  doc = Nokogiri::HTML(html)
-  counts = Crawl::PLACES.map { |p| parse(doc, "//a[@id='box_#{p}']") }.map { |s| extract(s) }
+  params = ARGV.getopts('', 'name:all', 'time:now')
+  name, time = params['name'], params['time']
+  time = Time.now if time == 'now'
+  places = Crawl::Scraper.scrape(name, time)
 
   print Time.now.to_s + ' '
-  puts Crawl::PLACES.map.with_index { |p, i| "#{p} #{counts[i][0]} #{counts[i][1]}" }.join(', ')
+  puts places.map(&:to_s).join(', ')
 end
 
 
