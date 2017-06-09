@@ -81,13 +81,14 @@ def extract(str)
   str.strip.match(/(\d+)[^\d]+(\d+)/).to_a.slice(1, 2)
 end
 
-html = Cache.fetch(Time.now) { fetch(url).to_html }
-doc = Nokogiri::HTML(html)
-counts = places.map { |p| parse(doc, "//a[@id='box_#{p}']") }.map { |s| extract(s) }
+if $0 == __FILE__
+  html = Cache.fetch(Time.now) { fetch(url).to_html }
+  doc = Nokogiri::HTML(html)
+  counts = places.map { |p| parse(doc, "//a[@id='box_#{p}']") }.map { |s| extract(s) }
 
-print Time.now.to_s + ' '
-puts places.map.with_index { |p, i| "#{p} #{counts[i][0]} #{counts[i][1]}" }.join(', ')
-
+  print Time.now.to_s + ' '
+  puts places.map.with_index { |p, i| "#{p} #{counts[i][0]} #{counts[i][1]}" }.join(', ')
+end
 
 
 
