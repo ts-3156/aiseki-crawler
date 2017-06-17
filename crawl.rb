@@ -81,10 +81,10 @@ module Crawl
     URL = 'http://oriental-lounge.com/'
 
     class << self
-      def scrape(name, time)
+      def scrape(time)
         html = Cache.fetch(time) { fetch(URL).to_html }
         doc = Nokogiri::HTML(html)
-        Place::NAMES.select { |n| name == 'all' ? true : name == n }.map do |name|
+        Place::NAMES.map do |name|
           str = parse(doc, "//a[@id='box_#{name}']")
           men, lady = extract(str)
           Place.new(name, men, lady)
@@ -113,10 +113,7 @@ module Crawl
 end
 
 if $0 == __FILE__
-  params = ARGV.getopts('', 'name:all', 'time:now')
-  name, time = params['name'], params['time']
-  time = Time.now if time == 'now'
-  places = Crawl::Scraper.scrape(name, time)
+  places = Crawl::Scraper.scrape(Time.now)
 
   print Time.now.to_s + ' '
   puts places.map(&:to_s).join(', ')
