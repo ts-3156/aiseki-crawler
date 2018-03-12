@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>相席ラウンジ クローラー</title>
+    <title>相席ラウンジ 店内の人数</title>
 
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
@@ -10,44 +10,38 @@
 </head>
 <body>
 
-<div id="container" style="height: 400px; min-width: 310px"></div>
+<div id="container" style="height: 500px; min-width: 310px"></div>
 
 <script>
-    var seriesOptions = [],
-        seriesCounter = 0,
-        names = ['shinjuku_man', 'shinjuku_woman'];
+    var seriesOptions = [];
+    var names = ['shinjuku_man', 'shinjuku_woman'];
 
     function createChart() {
 
         Highcharts.stockChart('container', {
 
             rangeSelector: {
-                selected: 4
+                selected: 0 // 1 month
             },
 
             yAxis: {
                 labels: {
                     formatter: function () {
-                        return (this.value > 0 ? ' + ' : '') + this.value + '%';
+                        return this.value + '人';
                     }
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 2,
-                    color: 'silver'
-                }]
+                }
             },
 
             plotOptions: {
                 series: {
-                    compare: 'percent',
-                    showInNavigator: true
+                    showInNavigator: true,
+                    lineWidth: 1
                 }
             },
 
             tooltip: {
-                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
-                valueDecimals: 2,
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+                valueDecimals: 0,
                 split: true
             },
 
@@ -57,16 +51,15 @@
 
     $.each(names, function (i, name) {
 
-        $.getJSON(name.toLowerCase() + '.json', function (data) {
+        $.getJSON(name + '.json', function (data) {
 
             seriesOptions[i] = {
                 name: name,
-                data: data
+                data: data,
+                color: i === 0 ? '#2196F3' : '#F44336'
             };
 
-            seriesCounter += 1;
-
-            if (seriesCounter === names.length) {
+            if (seriesOptions.length === names.length) {
                 createChart();
             }
         });
