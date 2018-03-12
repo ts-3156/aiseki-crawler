@@ -5,6 +5,7 @@ GEM
       nokogiri (>= 1.3.0)
       robotex (>= 1.0.0)
     coderay (1.1.2)
+    json (2.1.0)
     method_source (0.9.0)
     mini_portile2 (2.3.0)
     nokogiri (1.8.2)
@@ -19,6 +20,7 @@ PLATFORMS
 
 DEPENDENCIES
   anemone
+  json
   pry
 
 BUNDLED WITH
