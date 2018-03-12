@@ -1,13 +1,20 @@
 #!/usr/bin/ruby
 
-require 'optparse'
+require 'time'
+require 'json'
 
 if $0 == __FILE__
-  name = ARGV.getopts('', 'name:')['name']
-  puts name
+  name, gender = ARGV[1], ARGV[2]
+
+  puts '['
+
   File.read('log/cron.log').split("\n").each do |line|
-    puts line.match(/(\d+-\d+-\d+ \d+:\d+:\d+).+#{name} (\d+) (\d+)/).to_a.slice(1, 3).join(', ')
+    m = line.match(/(?<time>\d+-\d+-\d+ \d+:\d+:\d+).+#{name} (?<man>\d+) (?<woman>\d+)/)
+    next unless m
+    puts [Time.parse(m[:time]).to_i * 1000, m[gender.to_sym].to_i].to_json
   end
+
+  puts ']'
 end
 
 

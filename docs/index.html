@@ -15,7 +15,7 @@
 <script>
     var seriesOptions = [],
         seriesCounter = 0,
-        names = ['MSFT', 'AAPL', 'GOOG'];
+        names = ['shinjuku_man', 'shinjuku_woman'];
 
     function createChart() {
 
@@ -57,7 +57,7 @@
 
     $.each(names, function (i, name) {
 
-        $.getJSON('https://www.highcharts.com/samples/data/' + name.toLowerCase() + '-c.json', function (data) {
+        $.getJSON(name.toLowerCase() + '.json', function (data) {
 
             seriesOptions[i] = {
                 name: name,
